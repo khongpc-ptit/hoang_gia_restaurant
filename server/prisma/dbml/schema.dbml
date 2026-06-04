@@ -1,0 +1,122 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table Account {
+  id Int [pk, increment]
+  name String [not null]
+  email String [unique, not null]
+  password String [not null]
+  avatar String
+  role String [not null, default: 'Employee']
+  ownerId Int
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  owner Account
+  employees Account [not null]
+  orders Order [not null]
+  refreshToken RefreshToken [not null]
+  sockets Socket
+}
+
+Table Dish {
+  id Int [pk, increment]
+  name String [not null]
+  price Int [not null]
+  description String [not null]
+  image String [not null]
+  status String [not null, default: 'Available']
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  dishSnapshots DishSnapshot [not null]
+}
+
+Table DishSnapshot {
+  id Int [pk, increment]
+  name String [not null]
+  price Int [not null]
+  description String [not null]
+  image String [not null]
+  status String [not null, default: 'Available']
+  dishId Int
+  updatedAt DateTime [not null]
+  createdAt DateTime [default: `now()`, not null]
+  dish Dish
+  order Order
+}
+
+Table Table {
+  number Int [pk, increment]
+  capacity Int [not null]
+  status String [not null, default: 'Available']
+  token String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  guests Guest [not null]
+  orders Order [not null]
+}
+
+Table Order {
+  id Int [pk, increment]
+  guestId Int
+  tableNumber Int
+  dishSnapshotId Int [unique, not null]
+  quantity Int [not null]
+  orderHandlerId Int
+  status String [not null, default: 'Pending']
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  orderHandler Account
+  dishSnapshot DishSnapshot [not null]
+  table Table
+  guest Guest
+}
+
+Table RefreshToken {
+  token String [pk]
+  accountId Int [not null]
+  expiresAt DateTime [not null]
+  createdAt DateTime [default: `now()`, not null]
+  account Account [not null]
+}
+
+Table Guest {
+  id Int [pk, increment]
+  name String [not null]
+  tableNumber Int
+  refreshToken String
+  refreshTokenExpiresAt DateTime
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  table Table
+  orders Order [not null]
+  sockets Socket
+}
+
+Table Socket {
+  socketId String [pk]
+  accountId Int [unique]
+  guestId Int [unique]
+  guest Guest
+  account Account
+}
+
+Ref: Account.ownerId - Account.id
+
+Ref: DishSnapshot.dishId > Dish.id
+
+Ref: Order.orderHandlerId > Account.id
+
+Ref: Order.dishSnapshotId - DishSnapshot.id [delete: Cascade]
+
+Ref: Order.tableNumber > Table.number
+
+Ref: Order.guestId > Guest.id
+
+Ref: RefreshToken.accountId > Account.id [delete: Cascade]
+
+Ref: Guest.tableNumber > Table.number
+
+Ref: Socket.guestId - Guest.id
+
+Ref: Socket.accountId - Account.id
