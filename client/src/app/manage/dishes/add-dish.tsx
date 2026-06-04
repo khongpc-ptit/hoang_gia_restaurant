@@ -73,18 +73,32 @@ export default function AddDish() {
     if (addDishMutation.isPending) return
     try {
       let body = values
-      if (file) {
+    if (file) {
         const formData = new FormData()
         formData.append('file', file)
-        const uploadImageResult = await uploadMediaMutation.mutateAsync(
-          formData
-        )
-        const imageUrl = uploadImageResult.payload.data
-        body = {
-          ...values,
-          image: imageUrl
+        formData.append('upload_preset', 'mn9huksh')
+        formData.append('cloud_name', 'dj5mxvmtm')
+
+        const res = await fetch('https://api.cloudinary.com/v1_1/dj5mxvmtm/image/upload', {
+          method: 'POST',
+          body: formData
+        })
+        
+        const data = await res.json()
+        
+        if (data.secure_url) {
+          console.log('1. Upload thành công lên Cloudinary! Link ảnh:', data.secure_url)
+          
+  
+          body = {
+            ...values,
+            image: data.secure_url
+          }
+        } else {
+          throw new Error('Không lấy được URL ảnh từ Cloudinary')
         }
       }
+
       const result = await addDishMutation.mutateAsync(body)
       await revalidateApiRequest('dishes')
       toast({
