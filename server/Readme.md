@@ -137,7 +137,6 @@ Nhân viên
 
 - Quản lý tài khoản cá nhân
 - Quản lý hóa đơn gọi món
-- Thống kê doanh thu
 
 Khách hàng
 
