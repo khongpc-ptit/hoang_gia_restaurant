@@ -15,7 +15,7 @@ import {
 import fastify, { FastifyInstance, FastifyPluginOptions } from 'fastify'
 
 export default async function dishRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
-  fastify.addHook('preValidation', fastify.auth([requireLoginedHook]))
+  // fastify.addHook('preValidation', fastify.auth([requireLoginedHook]))
   fastify.get<{
     Reply: DishListResType
   }>(
@@ -70,7 +70,7 @@ export default async function dishRoutes(fastify: FastifyInstance, options: Fast
           200: DishRes
         }
       },
-      preValidation: fastify.auth([requireOwnerHook])
+      // preValidation: fastify.auth([requireOwnerHook])
     },
     async (request, reply) => {
       const dish = await createDish(request.body)
@@ -95,7 +95,7 @@ export default async function dishRoutes(fastify: FastifyInstance, options: Fast
           200: DishRes
         }
       },
-      preValidation: fastify.auth([requireOwnerHook])
+      // preValidation: fastify.auth([requireOwnerHook])
     },
     async (request, reply) => {
       const dish = await updateDish(request.params.id, request.body)
@@ -118,7 +118,7 @@ export default async function dishRoutes(fastify: FastifyInstance, options: Fast
           200: DishRes
         }
       },
-      preValidation: fastify.auth([requireOwnerHook])
+      // preValidation: fastify.auth([requireOwnerHook])
     },
     async (request, reply) => {
       const result = await deleteDish(request.params.id)

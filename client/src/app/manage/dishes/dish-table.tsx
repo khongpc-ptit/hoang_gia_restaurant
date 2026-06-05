@@ -56,6 +56,7 @@ import EditDish from '@/app/manage/dishes/edit-dish'
 import AddDish from '@/app/manage/dishes/add-dish'
 import { useDeleteDishMutation, useDishListQuery } from '@/queries/useDish'
 import { toast } from '@/components/ui/use-toast'
+import revalidateApiRequest from '@/apiRequests/revalidate'
 
 type DishItem = DishListResType['data'][0]
 
@@ -165,6 +166,7 @@ function AlertDialogDeleteDish({
     if (dishDelete) {
       try {
         const result = await mutateAsync(dishDelete.id)
+        await revalidateApiRequest('dishes')
         setDishDelete(null)
         toast({
           title: result.payload.message

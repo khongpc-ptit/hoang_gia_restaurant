@@ -3,6 +3,9 @@ import { formatCurrency } from '@/lib/utils'
 import { DishListResType } from '@/schemaValidations/dish.schema'
 import Image from 'next/image'
 
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 export default async function Home() {
   let dishList: DishListResType['data'] = []
   try {
