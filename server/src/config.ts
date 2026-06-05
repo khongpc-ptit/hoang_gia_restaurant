@@ -3,18 +3,18 @@ import path from 'path'
 import z from 'zod'
 import { config } from 'dotenv'
 
-config({
-  path: '.env'
-})
+const isProduction = process.env.NODE_ENV === 'production'
 
-const checkEnv = async () => {
-  const chalk = (await import('chalk')).default
+if (!isProduction) {
+  config({
+    path: '.env'
+  })
+
   if (!fs.existsSync(path.resolve('.env'))) {
-    console.log(chalk.red(`Không tìm thấy file môi trường .env`))
+    console.log('Không tìm thấy file môi trường .env')
     process.exit(1)
   }
 }
-checkEnv()
 
 const configSchema = z.object({
   PORT: z.coerce.number().default(4000),
@@ -29,7 +29,10 @@ const configSchema = z.object({
   INITIAL_PASSWORD_OWNER: z.string(),
   DOMAIN: z.string(),
   PROTOCOL: z.string(),
-  UPLOAD_FOLDER: z.string()
+  UPLOAD_FOLDER: z.string(),
+  HOST: z.string().default('0.0.0.0'),
+  CLIENT_URL: z.string().default('http://localhost:3000'),
+  PUBLIC_API_URL: z.string().optional(),
 })
 
 const configServer = configSchema.safeParse(process.env)
@@ -39,7 +42,7 @@ if (!configServer.success) {
   throw new Error('Các giá trị khai báo trong file .env không hợp lệ')
 }
 const envConfig = configServer.data
-export const API_URL = `${envConfig.PROTOCOL}://${envConfig.DOMAIN}:${envConfig.PORT}`
+export const API_URL = envConfig.PUBLIC_API_URL || `${envConfig.PROTOCOL}://${envConfig.DOMAIN}:${envConfig.PORT}`
 export default envConfig
 
 declare global {
