@@ -51,24 +51,17 @@ export const handleErrorApi = ({
 
 const isBrowser = typeof window !== 'undefined'
 
-export const getAccessTokenFromLocalStorage = () =>
-  isBrowser ? localStorage.getItem('accessToken') : null
+export const getAccessTokenFromLocalStorage = () => (isBrowser ? localStorage.getItem('accessToken') : null)
 
-export const getRefreshTokenFromLocalStorage = () =>
-  isBrowser ? localStorage.getItem('refreshToken') : null
-export const setAccessTokenToLocalStorage = (value: string) =>
-  isBrowser && localStorage.setItem('accessToken', value)
+export const getRefreshTokenFromLocalStorage = () => (isBrowser ? localStorage.getItem('refreshToken') : null)
+export const setAccessTokenToLocalStorage = (value: string) => isBrowser && localStorage.setItem('accessToken', value)
 
-export const setRefreshTokenToLocalStorage = (value: string) =>
-  isBrowser && localStorage.setItem('refreshToken', value)
+export const setRefreshTokenToLocalStorage = (value: string) => isBrowser && localStorage.setItem('refreshToken', value)
 export const removeTokensFromLocalStorage = () => {
   isBrowser && localStorage.removeItem('accessToken')
   isBrowser && localStorage.removeItem('refreshToken')
 }
-export const checkAndRefreshToken = async (param?: {
-  onError?: () => void
-  onSuccess?: () => void
-}) => {
+export const checkAndRefreshToken = async (param?: { onError?: () => void; onSuccess?: () => void }) => {
   // Không nên đưa logic lấy access và refresh token ra khỏi cái function `checkAndRefreshToken`
   // Vì để mỗi lần mà checkAndRefreshToken() được gọi thì chúng ta se có một access và refresh token mới
   // Tránh hiện tượng bug nó lấy access và refresh token cũ ở lần đầu rồi gọi cho các lần tiếp theo
@@ -90,17 +83,11 @@ export const checkAndRefreshToken = async (param?: {
   // thì mình sẽ kiểm tra còn 1/3 thời gian (3s) thì mình sẽ cho refresh token lại
   // Thời gian còn lại sẽ tính dựa trên công thức: decodedAccessToken.exp - now
   // Thời gian hết hạn của access token dựa trên công thức: decodedAccessToken.exp - decodedAccessToken.iat
-  if (
-    decodedAccessToken.exp - now <
-    (decodedAccessToken.exp - decodedAccessToken.iat) / 3
-  ) {
+  if (decodedAccessToken.exp - now < (decodedAccessToken.exp - decodedAccessToken.iat) / 3) {
     // Gọi API refresh token
     try {
       const role = decodedRefreshToken.role
-      const res =
-        role === Role.Guest
-          ? await guestApiRequest.refreshToken()
-          : await authApiRequest.refreshToken()
+      const res = role === Role.Guest ? await guestApiRequest.refreshToken() : await authApiRequest.refreshToken()
       setAccessTokenToLocalStorage(res.payload.data.accessToken)
       setRefreshTokenToLocalStorage(res.payload.data.refreshToken)
       param?.onSuccess && param.onSuccess()
@@ -117,9 +104,7 @@ export const formatCurrency = (number: number) => {
   }).format(number)
 }
 
-export const getVietnameseDishStatus = (
-  status: (typeof DishStatus)[keyof typeof DishStatus]
-) => {
+export const getVietnameseDishStatus = (status: (typeof DishStatus)[keyof typeof DishStatus]) => {
   switch (status) {
     case DishStatus.Available:
       return 'Có sẵn'
@@ -130,9 +115,7 @@ export const getVietnameseDishStatus = (
   }
 }
 
-export const getVietnameseOrderStatus = (
-  status: (typeof OrderStatus)[keyof typeof OrderStatus]
-) => {
+export const getVietnameseOrderStatus = (status: (typeof OrderStatus)[keyof typeof OrderStatus]) => {
   switch (status) {
     case OrderStatus.Delivered:
       return 'Đã phục vụ'
@@ -147,9 +130,7 @@ export const getVietnameseOrderStatus = (
   }
 }
 
-export const getVietnameseTableStatus = (
-  status: (typeof TableStatus)[keyof typeof TableStatus]
-) => {
+export const getVietnameseTableStatus = (status: (typeof TableStatus)[keyof typeof TableStatus]) => {
   switch (status) {
     case TableStatus.Available:
       return 'Có sẵn'
@@ -160,16 +141,8 @@ export const getVietnameseTableStatus = (
   }
 }
 
-export const getTableLink = ({
-  token,
-  tableNumber
-}: {
-  token: string
-  tableNumber: number
-}) => {
-  return (
-    envConfig.NEXT_PUBLIC_URL + '/tables/' + tableNumber + '?token=' + token
-  )
+export const getTableLink = ({ token, tableNumber }: { token: string; tableNumber: number }) => {
+  return envConfig.NEXT_PUBLIC_URL + '/tables/' + tableNumber + '?token=' + token
 }
 
 export const decodeToken = (token: string) => {
@@ -185,16 +158,11 @@ export function removeAccents(str: string) {
 }
 
 export const simpleMatchText = (fullText: string, matchText: string) => {
-  return removeAccents(fullText.toLowerCase()).includes(
-    removeAccents(matchText.trim().toLowerCase())
-  )
+  return removeAccents(fullText.toLowerCase()).includes(removeAccents(matchText.trim().toLowerCase()))
 }
 
 export const formatDateTimeToLocaleString = (date: string | Date) => {
-  return format(
-    date instanceof Date ? date : new Date(date),
-    'HH:mm:ss dd/MM/yyyy'
-  )
+  return format(date instanceof Date ? date : new Date(date), 'HH:mm:ss dd/MM/yyyy')
 }
 
 export const formatDateTimeToTimeString = (date: string | Date) => {
@@ -207,4 +175,33 @@ export const OrderStatusIcon = {
   [OrderStatus.Rejected]: BookX,
   [OrderStatus.Delivered]: Truck,
   [OrderStatus.Paid]: HandCoins
+}
+
+export const uploadImageToCloudinary = async (file: File, values: any) => {
+  let body = values
+
+  if (file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', 'mn9huksh')
+    formData.append('cloud_name', 'dj5mxvmtm')
+
+    const res = await fetch('https://api.cloudinary.com/v1_1/dj5mxvmtm/image/upload', {
+      method: 'POST',
+      body: formData
+    })
+
+    const data = await res.json()
+
+    if (data.secure_url) {
+      console.log('Upload avatar lên Cloudinary thành công:', data.secure_url)
+
+      return (body = {
+        ...values,
+        avatar: data.secure_url
+      })
+    } else {
+      throw new Error('Không lấy được URL avatar từ Cloudinary')
+    }
+  }
 }

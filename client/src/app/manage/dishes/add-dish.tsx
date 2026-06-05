@@ -1,40 +1,18 @@
 'use client'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PlusCircle, Upload } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage
-} from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { getVietnameseDishStatus, handleErrorApi } from '@/lib/utils'
-import {
-  CreateDishBody,
-  CreateDishBodyType
-} from '@/schemaValidations/dish.schema'
+import { getVietnameseDishStatus, handleErrorApi, uploadImageToCloudinary } from '@/lib/utils'
+import { CreateDishBody, CreateDishBodyType } from '@/schemaValidations/dish.schema'
 import { DishStatus, DishStatusValues } from '@/constants/type'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useAddDishMutation } from '@/queries/useDish'
 import { useUploadMediaMutation } from '@/queries/useMedia'
@@ -73,30 +51,8 @@ export default function AddDish() {
     if (addDishMutation.isPending) return
     try {
       let body = values
-    if (file) {
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('upload_preset', 'mn9huksh')
-        formData.append('cloud_name', 'dj5mxvmtm')
-
-        const res = await fetch('https://api.cloudinary.com/v1_1/dj5mxvmtm/image/upload', {
-          method: 'POST',
-          body: formData
-        })
-        
-        const data = await res.json()
-        
-        if (data.secure_url) {
-          console.log('1. Upload thành công lên Cloudinary! Link ảnh:', data.secure_url)
-          
-  
-          body = {
-            ...values,
-            image: data.secure_url
-          }
-        } else {
-          throw new Error('Không lấy được URL ảnh từ Cloudinary')
-        }
+      if (file) {
+        body = await uploadImageToCloudinary(file as File, values)
       }
 
       const result = await addDishMutation.mutateAsync(body)
@@ -126,9 +82,7 @@ export default function AddDish() {
       <DialogTrigger asChild>
         <Button size='sm' className='h-7 gap-1'>
           <PlusCircle className='h-3.5 w-3.5' />
-          <span className='sr-only sm:not-sr-only sm:whitespace-nowrap'>
-            Thêm món ăn
-          </span>
+          <span className='sr-only sm:not-sr-only sm:whitespace-nowrap'>Thêm món ăn</span>
         </Button>
       </DialogTrigger>
       <DialogContent className='sm:max-w-[600px] max-h-screen overflow-auto'>
@@ -154,9 +108,7 @@ export default function AddDish() {
                     <div className='flex gap-2 items-start justify-start'>
                       <Avatar className='aspect-square w-[100px] h-[100px] rounded-md object-cover'>
                         <AvatarImage src={previewAvatarFromFile} />
-                        <AvatarFallback className='rounded-none'>
-                          {name || 'Ảnh món ăn'}
-                        </AvatarFallback>
+                        <AvatarFallback className='rounded-none'>{name || 'Ảnh món ăn'}</AvatarFallback>
                       </Avatar>
                       <input
                         type='file'
@@ -207,12 +159,7 @@ export default function AddDish() {
                     <div className='grid grid-cols-4 items-center justify-items-start gap-4'>
                       <Label htmlFor='price'>Giá</Label>
                       <div className='col-span-3 w-full space-y-2'>
-                        <Input
-                          id='price'
-                          className='w-full'
-                          {...field}
-                          type='number'
-                        />
+                        <Input id='price' className='w-full' {...field} type='number' />
                         <FormMessage />
                       </div>
                     </div>
@@ -227,11 +174,7 @@ export default function AddDish() {
                     <div className='grid grid-cols-4 items-center justify-items-start gap-4'>
                       <Label htmlFor='description'>Mô tả sản phẩm</Label>
                       <div className='col-span-3 w-full space-y-2'>
-                        <Textarea
-                          id='description'
-                          className='w-full'
-                          {...field}
-                        />
+                        <Textarea id='description' className='w-full' {...field} />
                         <FormMessage />
                       </div>
                     </div>
@@ -246,10 +189,7 @@ export default function AddDish() {
                     <div className='grid grid-cols-4 items-center justify-items-start gap-4'>
                       <Label htmlFor='description'>Trạng thái</Label>
                       <div className='col-span-3 w-full space-y-2'>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder='Chọn trạng thái' />
