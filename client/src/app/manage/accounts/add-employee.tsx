@@ -58,8 +58,10 @@ export default function AddEmployee() {
     if (addAccountMutation.isPending) return
     try {
       let body = values
+      let imageUrl: string | undefined = undefined
       if (file) {
-        body = await uploadImageToCloudinary(file as File, values)
+        imageUrl = await uploadImageToCloudinary(file as File, values)
+        body = { ...body, avatar: imageUrl as string }
       }
       const result = await addAccountMutation.mutateAsync(body)
       toast({

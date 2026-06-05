@@ -195,11 +195,17 @@ export const uploadImageToCloudinary = async (file: File, values: any) => {
 
     if (data.secure_url) {
       console.log('Upload avatar lên Cloudinary thành công:', data.secure_url)
-
-      return (body = {
-        ...values,
-        avatar: data.secure_url
-      })
+      // if ('avatar' in values) {
+      //   body = {
+      //     ...values,
+      //     avatar: data.secure_url
+      //   }
+      // }
+      // body = {
+      //   ...values,
+      //   image: data.secure_url
+      // }
+      return data.secure_url
     } else {
       throw new Error('Không lấy được URL avatar từ Cloudinary')
     }
