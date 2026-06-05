@@ -86,7 +86,7 @@ export default function EditEmployee({
       if (file) {
         const formData = new FormData()
         formData.append('file', file)
-        const uploadImageResult = await uploadMediaMutation.mutateAsync(formData)
+        // const uploadImageResult = await uploadMediaMutation.mutateAsync(formData)
         //---
         let imageUrl: string | undefined = undefined
         if (file) {
