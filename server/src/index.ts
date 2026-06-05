@@ -29,10 +29,11 @@ const fastify = Fastify({
 // Run the server!
 const start = async () => {
   try {
+    const allowedOrigins = ['http://localhost:3000', envConfig.CLIENT_URL].filter(Boolean)
     createFolder(path.resolve(envConfig.UPLOAD_FOLDER))
-    const whitelist = ['*']
+    // const whitelist = ['*']
     fastify.register(cors, {
-      origin: whitelist, // Cho phép tất cả các domain gọi API
+      origin: allowedOrigins, // Chỉ cho client đã khai báo gọi API
       credentials: true // Cho phép trình duyệt gửi cookie đến server
     })
 
@@ -49,7 +50,8 @@ const start = async () => {
     fastify.register(errorHandlerPlugin)
     fastify.register(fastifySocketIO, {
       cors: {
-        origin: 'http://localhost:3000'
+        origin: allowedOrigins,
+        credentials: true
       }
     })
     fastify.register(socketPlugin)
@@ -82,7 +84,8 @@ const start = async () => {
     })
     await initOwnerAccount()
     await fastify.listen({
-      port: envConfig.PORT
+      port: envConfig.PORT,
+      host: envConfig.HOST
     })
     console.log(`Server đang chạy: ${API_URL}`)
   } catch (err) {
