@@ -25,8 +25,7 @@ export default async function dishRoutes(fastify: FastifyInstance, options: Fast
         response: {
           200: DishListRes
         }
-      },
-      preValidation: fastify.auth([requireOwnerHook])
+      }
     },
     async (request, reply) => {
       const dishs = await getDishList()
@@ -48,8 +47,7 @@ export default async function dishRoutes(fastify: FastifyInstance, options: Fast
         response: {
           200: DishRes
         }
-      },
-      preValidation: fastify.auth([requireOwnerHook])
+      }
     },
     async (request, reply) => {
       const dish = await getDishDetail(request.params.id)

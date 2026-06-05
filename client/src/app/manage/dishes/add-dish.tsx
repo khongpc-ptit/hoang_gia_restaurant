@@ -51,10 +51,11 @@ export default function AddDish() {
     if (addDishMutation.isPending) return
     try {
       let body = values
+      let imageUrl: string | undefined = undefined
       if (file) {
-        body = await uploadImageToCloudinary(file as File, values)
+        imageUrl = await uploadImageToCloudinary(file as File, values)
+        body = { ...body, image: imageUrl as string }
       }
-
       const result = await addDishMutation.mutateAsync(body)
       await revalidateApiRequest('dishes')
       toast({
