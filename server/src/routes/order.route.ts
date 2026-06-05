@@ -91,8 +91,8 @@ export default async function orderRoutes(fastify: FastifyInstance, options: Fas
           200: GetOrderDetailRes
         },
         params: OrderParam
-      },
-      preValidation: fastify.auth([requireOwnerHook])
+      }
+      // preValidation: fastify.auth([requireOwnerHook])
     },
     async (request, reply) => {
       const result = await getOrderDetailController(request.params.orderId)
@@ -112,8 +112,8 @@ export default async function orderRoutes(fastify: FastifyInstance, options: Fas
         },
         body: UpdateOrderBody,
         params: OrderParam
-      },
-      preValidation: fastify.auth([requireOwnerHook])
+      }
+      // preValidation: fastify.auth([requireOwnerHook])
     },
     async (request, reply) => {
       const result = await updateOrderController(request.params.orderId, {
@@ -140,8 +140,8 @@ export default async function orderRoutes(fastify: FastifyInstance, options: Fas
           200: PayGuestOrdersRes
         },
         body: PayGuestOrdersBody
-      },
-      preValidation: fastify.auth([requireOwnerHook])
+      }
+      // preValidation: fastify.auth([requireOwnerHook])
     },
     async (request, reply) => {
       const result = await payOrdersController({
