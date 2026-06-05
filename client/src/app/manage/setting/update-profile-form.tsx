@@ -5,10 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Upload } from 'lucide-react'
 import { useForm } from 'react-hook-form'
-import {
-  UpdateMeBody,
-  UpdateMeBodyType
-} from '@/schemaValidations/account.schema'
+import { UpdateMeBody, UpdateMeBodyType } from '@/schemaValidations/account.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -16,7 +13,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAccountMe, useUpdateMeMutation } from '@/queries/useAccount'
 import { useUploadMediaMutation } from '@/queries/useMedia'
 import { toast } from '@/components/ui/use-toast'
-import { handleErrorApi } from '@/lib/utils'
+import { handleErrorApi, uploadImageToCloudinary } from '@/lib/utils'
 
 export default function UpdateProfileForm() {
   const [file, setFile] = useState<File | null>(null)
@@ -57,53 +54,28 @@ export default function UpdateProfileForm() {
     setFile(null)
   }
   const onSubmit = async (values: UpdateMeBodyType) => {
-  if (updateMeMutation.isPending) return
-  
-  try {
-    let body = values
+    if (updateMeMutation.isPending) return
 
-    if (file) {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('upload_preset', 'mn9huksh') 
-      formData.append('cloud_name', 'dj5mxvmtm')   
-  
-      const res = await fetch('https://api.cloudinary.com/v1_1/dj5mxvmtm/image/upload', {
-        method: 'POST',
-        body: formData
-      })
-      
-      const data = await res.json()
-
-      if (data.secure_url) {
-        console.log('Upload avatar lên Cloudinary thành công:', data.secure_url)
-        
-
-        body = {
-          ...values,
-          avatar: data.secure_url
-        }
-      } else {
-        throw new Error('Không lấy được URL avatar từ Cloudinary')
+    try {
+      let body = values
+      if (file) {
+        body = await uploadImageToCloudinary(file as File, values)
       }
-    }
+      const result = await updateMeMutation.mutateAsync(body)
 
-    const result = await updateMeMutation.mutateAsync(body)
-    
-    toast({
-      description: result.payload.message
-    })
-    
-    refetch()
-    
-  } catch (error) {
-    console.error('Lỗi khi cập nhật thông tin cá nhân:', error)
-    handleErrorApi({
-      error,
-      setError: form.setError
-    })
+      toast({
+        description: result.payload.message
+      })
+
+      refetch()
+    } catch (error) {
+      console.error('Lỗi khi cập nhật thông tin cá nhân:', error)
+      handleErrorApi({
+        error,
+        setError: form.setError
+      })
+    }
   }
-}
   return (
     <Form {...form}>
       <form
@@ -128,9 +100,7 @@ export default function UpdateProfileForm() {
                     <div className='flex gap-2 items-start justify-start'>
                       <Avatar className='aspect-square w-[100px] h-[100px] rounded-md object-cover'>
                         <AvatarImage src={previewAvatar} />
-                        <AvatarFallback className='rounded-none'>
-                          {name}
-                        </AvatarFallback>
+                        <AvatarFallback className='rounded-none'>{name}</AvatarFallback>
                       </Avatar>
                       <input
                         type='file'
@@ -141,9 +111,7 @@ export default function UpdateProfileForm() {
                           const file = e.target.files?.[0]
                           if (file) {
                             setFile(file)
-                            field.onChange(
-                              'http://localhost:3000/' + field.name
-                            )
+                            field.onChange('http://localhost:3000/' + field.name)
                           }
                         }}
                       />
@@ -167,12 +135,7 @@ export default function UpdateProfileForm() {
                   <FormItem>
                     <div className='grid gap-3'>
                       <Label htmlFor='name'>Tên</Label>
-                      <Input
-                        id='name'
-                        type='text'
-                        className='w-full'
-                        {...field}
-                      />
+                      <Input id='name' type='text' className='w-full' {...field} />
                       <FormMessage />
                     </div>
                   </FormItem>
