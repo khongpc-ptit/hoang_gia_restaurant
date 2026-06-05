@@ -57,33 +57,53 @@ export default function UpdateProfileForm() {
     setFile(null)
   }
   const onSubmit = async (values: UpdateMeBodyType) => {
-    if (updateMeMutation.isPending) return
-    try {
-      let body = values
-      if (file) {
-        const formData = new FormData()
-        formData.append('file', file)
-        const uploadImageResult = await uploadMediaMutation.mutateAsync(
-          formData
-        )
-        const imageUrl = uploadImageResult.payload.data
+  if (updateMeMutation.isPending) return
+  
+  try {
+    let body = values
+
+    if (file) {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('upload_preset', 'mn9huksh') 
+      formData.append('cloud_name', 'dj5mxvmtm')   
+  
+      const res = await fetch('https://api.cloudinary.com/v1_1/dj5mxvmtm/image/upload', {
+        method: 'POST',
+        body: formData
+      })
+      
+      const data = await res.json()
+
+      if (data.secure_url) {
+        console.log('Upload avatar lên Cloudinary thành công:', data.secure_url)
+        
+
         body = {
           ...values,
-          avatar: imageUrl
+          avatar: data.secure_url
         }
+      } else {
+        throw new Error('Không lấy được URL avatar từ Cloudinary')
       }
-      const result = await updateMeMutation.mutateAsync(body)
-      toast({
-        description: result.payload.message
-      })
-      refetch()
-    } catch (error) {
-      handleErrorApi({
-        error,
-        setError: form.setError
-      })
     }
+
+    const result = await updateMeMutation.mutateAsync(body)
+    
+    toast({
+      description: result.payload.message
+    })
+    
+    refetch()
+    
+  } catch (error) {
+    console.error('Lỗi khi cập nhật thông tin cá nhân:', error)
+    handleErrorApi({
+      error,
+      setError: form.setError
+    })
   }
+}
   return (
     <Form {...form}>
       <form
