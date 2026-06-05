@@ -47,7 +47,8 @@ export default async function dishRoutes(fastify: FastifyInstance, options: Fast
         response: {
           200: DishRes
         }
-      }
+      },
+      preValidation: [requireLoginedHook, requireOwnerHook]
     },
     async (request, reply) => {
       const dish = await getDishDetail(request.params.id)
@@ -70,7 +71,7 @@ export default async function dishRoutes(fastify: FastifyInstance, options: Fast
           200: DishRes
         }
       },
-      // preValidation: fastify.auth([requireOwnerHook])
+      preValidation: [requireLoginedHook, requireOwnerHook]
     },
     async (request, reply) => {
       const dish = await createDish(request.body)
@@ -95,7 +96,7 @@ export default async function dishRoutes(fastify: FastifyInstance, options: Fast
           200: DishRes
         }
       },
-      // preValidation: fastify.auth([requireOwnerHook])
+      preValidation: [requireLoginedHook, requireOwnerHook]
     },
     async (request, reply) => {
       const dish = await updateDish(request.params.id, request.body)
@@ -118,7 +119,7 @@ export default async function dishRoutes(fastify: FastifyInstance, options: Fast
           200: DishRes
         }
       },
-      // preValidation: fastify.auth([requireOwnerHook])
+      preValidation: [requireLoginedHook, requireOwnerHook]
     },
     async (request, reply) => {
       const result = await deleteDish(request.params.id)
